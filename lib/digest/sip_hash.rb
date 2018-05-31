@@ -100,10 +100,10 @@ module Digest
         return last if @size.zero?
 
         r = @size % 8
-        offset = @size / 8 * 8
+        offset = @size - r
 
-        [0, 8, 16, 24, 32, 40, 48].each_with_index.reverse_each do |n, i|
-          last |= @buffer[offset + i].ord << n if r > i
+        7.times.each_with_index.reverse_each do |n, i|
+          last |= @buffer[offset + i].ord << 8 * n if r > i
         end
 
         last
