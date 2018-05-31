@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
-require_relative '../lib/digest/sip_hash'
+lib = File.expand_path '../../lib', __FILE__
+$LOAD_PATH.prepend lib unless $LOAD_PATH.include? lib
+
+require 'digest/sip_hash'
 require 'minitest/autorun'
 require 'minitest/pride'
