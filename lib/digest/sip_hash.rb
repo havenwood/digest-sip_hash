@@ -56,9 +56,12 @@ module Digest
       end
 
       def append
+        return compress_word 0 if @size.zero?
+
         (@size / 8).times do |n|
           compress_word @buffer.slice(n * 8, 8).unpack1 'Q<'
         end
+
         compress_word complete_pending
       end
 
@@ -77,14 +80,14 @@ module Digest
       end
 
       def complete_pending
-        last = @size << 56 & MASK
-        return last if @size.zero?
+        remainder = @size % 8
+        offset = @size - remainder
 
-        r = @size % 8
-        offset = @size - r
+        last = @size << 56 & MASK
 
         7.downto 0 do |n|
-          last |= @buffer[offset + n].ord << 8 * n if r > n
+          next if n >= remainder
+          last |= @buffer[n + offset].ord << 8 * n
         end
 
         last
