@@ -56,7 +56,9 @@ module Digest
       end
 
       def append
-        (@size / 8).times { |n| compress_word @buffer.slice(n * 8, 8).unpack1 'Q<' }
+        (@size / 8).times do |n|
+          compress_word @buffer.slice(n * 8, 8).unpack1 'Q<'
+        end
         compress_word complete_pending
       end
 
@@ -68,27 +70,6 @@ module Digest
 
       private
 
-      def compress
-        @v0 = (@v0 + @v1) & MASK
-        @v1 = rotate @v1, by: 13
-        @v1 ^= @v0
-        @v0 = rotate @v0, by: 32
-        @v2 = (@v2 + @v3) & MASK
-        @v3 = rotate @v3, by: 16
-        @v3 ^= @v2
-        @v0 = (@v0 + @v3) & MASK
-        @v3 = rotate @v3, by: 21
-        @v3 ^= @v0
-        @v2 = (@v2 + @v1) & MASK
-        @v1 = rotate @v1, by: 17
-        @v1 ^= @v2
-        @v2 = rotate @v2, by: 32
-      end
-
-      def rotate n, by:
-        n << by & MASK | (n >> (64 - by))
-      end
-
       def compress_word m
         @v3 ^= m
         @c_rounds.times { compress }
@@ -96,17 +77,38 @@ module Digest
       end
 
       def complete_pending
-        last = (@size << 56) & MASK
+        last = @size << 56 & MASK
         return last if @size.zero?
 
         r = @size % 8
         offset = @size - r
 
-        7.times.each_with_index.reverse_each do |n, i|
-          last |= @buffer[offset + i].ord << 8 * n if r > i
+        7.downto 0 do |n|
+          last |= @buffer[offset + n].ord << 8 * n if r > n
         end
 
         last
+      end
+
+      def compress
+        @v0 = @v0 + @v1 & MASK
+        @v1 = rotate @v1, by: 13
+        @v1 ^= @v0
+        @v0 = rotate @v0, by: 32
+        @v2 = @v2 + @v3 & MASK
+        @v3 = rotate @v3, by: 16
+        @v3 ^= @v2
+        @v0 = @v0 + @v3 & MASK
+        @v3 = rotate @v3, by: 21
+        @v3 ^= @v0
+        @v2 = @v2 + @v1 & MASK
+        @v1 = rotate @v1, by: 17
+        @v1 ^= @v2
+        @v2 = rotate @v2, by: 32
+      end
+
+      def rotate n, by:
+        n << by & MASK | n >> 64 - by
       end
     end
   end
