@@ -5,7 +5,7 @@ require 'digest/sip_hash/version'
 
 module Digest
   class SipHash < Digest::Class
-    DEFAULT_KEY = (0.chr * 16).freeze
+    DEFAULT_KEY = 0.chr * 16
 
     attr_accessor :key
 
