@@ -94,17 +94,21 @@ module Digest
       end
 
       def compress
-        @v0 = @v0 + @v1 & MASK
+        @v0 += @v1
+        @v0 &= MASK
         @v1 = rotate @v1, by: 13
         @v1 ^= @v0
         @v0 = rotate @v0, by: 32
-        @v2 = @v2 + @v3 & MASK
+        @v2 += @v3
+        @v2 &= MASK
         @v3 = rotate @v3, by: 16
         @v3 ^= @v2
-        @v0 = @v0 + @v3 & MASK
+        @v0 += @v3
+        @v0 &= MASK
         @v3 = rotate @v3, by: 21
         @v3 ^= @v0
-        @v2 = @v2 + @v1 & MASK
+        @v2 += @v1
+        @v2 &= MASK
         @v1 = rotate @v1, by: 17
         @v1 ^= @v2
         @v2 = rotate @v2, by: 32
