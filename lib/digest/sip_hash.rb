@@ -57,12 +57,8 @@ module Digest
 
       def transform
         return compress_word 0 if @size.zero?
-
-        (@size / 8).times do |n|
-          compress_word @buffer.slice(n * 8, 8).unpack1 'Q<'
-        end
-
-        compress_word complete_pending
+        (@size / 8).times { |n| compress_word word n }
+        compress_word last_word
       end
 
       def finalize
@@ -79,7 +75,11 @@ module Digest
         @v0 ^= m
       end
 
-      def complete_pending
+      def word n
+        @buffer.slice(n * 8, 8).unpack1 'Q<'
+      end
+
+      def last_word
         remainder = @size % 8
         offset = @size - remainder
 
