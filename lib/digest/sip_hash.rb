@@ -29,7 +29,7 @@ module Digest
 
     def finish
       sip = Sip.new @buffer, @key, @c_rounds, @d_rounds
-      sip.append
+      sip.transform
       sip.finalize
     end
 
@@ -55,7 +55,7 @@ module Digest
         @v3 = V3 ^ k1
       end
 
-      def append
+      def transform
         return compress_word 0 if @size.zero?
 
         (@size / 8).times do |n|
