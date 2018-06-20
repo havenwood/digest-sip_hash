@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+# frozen_string_literal: true
+
+require 'digest/sip_hash'
+require 'optionparser'
+
+Settings = Struct.new :c, :d, keyword_init: true
+settings = Settings.new c: 1, d: 3
+options = ARGV.options do |x|
+  x.banner = "Usage: #{x.program_name} [OPTIONS] FILE"
+  x.version = Digest::SipHash::VERSION
+
+  PositiveInteger = /\A\d+(?:_\d+)*\z/
+  x.accept PositiveInteger, PositiveInteger, &:to_i
+
+  x.on '-c=ROUNDS', PositiveInteger, "Number of c rounds (default: #{settings.c})"
+  x.on '-d=ROUNDS', PositiveInteger, "Number of d rounds (default: #{settings.d})"
+end.freeze
+options.permute! into: settings
+
+path = ARGV.fetch 0, '-'
+hash = Digest::SipHash.new(settings.c, settings.d).hexdigest ARGF.read
+
+puts "#{hash}  #{path}"

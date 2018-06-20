@@ -13,8 +13,10 @@ Gem::Specification.new do |spec|
   spec.summary       = 'Pure Ruby SipHash 1-3 and 2-4.'
   spec.homepage      = 'https://github.com/havenwood/digest-sip_hash'
   spec.license       = 'MIT'
-  spec.files         = %w'Gemfile LICENSE Rakefile README.md' + Dir['{lib,spec}/**/*.rb']
+  spec.files         = %w'Gemfile LICENSE Rakefile README.md' + Dir['{lib,spec}/**/*.rb', 'bin/*']
   spec.require_paths = %w[lib]
+  spec.bindir        = 'bin'
+  spec.executables  << 'siphash'
 
   spec.add_development_dependency 'rake', '~> 12'
   spec.add_development_dependency 'minitest', '~> 5'
