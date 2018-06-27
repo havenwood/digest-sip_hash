@@ -106,7 +106,7 @@ module Digest
       end
 
       def rotate n, by, xor = 0
-        (n << by & MASK | n >> 64 - by) ^ xor
+        n << by & MASK | n >> 64 - by ^ xor
       end
     end
   end
