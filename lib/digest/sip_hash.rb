@@ -83,8 +83,8 @@ module Digest
         remainder = @size % 8
         offset = @size - remainder
 
-        [remainder, 8].min.pred.downto(0).reduce(@size << 56 & MASK) do |acc, n|
-          acc | @buffer[n + offset].ord << 8 * n
+        remainder.times.reverse_each.reduce @size << 56 & MASK do |last, n|
+          last | @buffer[n + offset].ord << 8 * n
         end
       end
 
