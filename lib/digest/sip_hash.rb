@@ -83,14 +83,9 @@ module Digest
         remainder = @size % 8
         offset = @size - remainder
 
-        last = @size << 56 & MASK
-
-        7.downto 0 do |n|
-          next if n >= remainder
-          last |= @buffer[n + offset].ord << 8 * n
+        [remainder, 8].min.pred.downto(0).reduce(@size << 56 & MASK) do |acc, n|
+          acc | @buffer[n + offset].ord << 8 * n
         end
-
-        last
       end
 
       def compress
