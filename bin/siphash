@@ -23,7 +23,7 @@ options = ARGV.options do |x|
 
   x.on '-c=ROUNDS', UnsignedInteger, "Number of c rounds. Default: #{config.c}"
   x.on '-d=ROUNDS', UnsignedInteger, "Number of d rounds. Default: #{config.d}"
-  x.on '-k', '--key=KEY', HexOctets, "Sixteen-byte hex key. Default: \"#{hex_key}\""
+  x.on '-k', '--key=KEY', HexOctets, "16-octet hex key. Default: \"#{hex_key}\""
 end.freeze
 
 begin
