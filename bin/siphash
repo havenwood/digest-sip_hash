@@ -6,8 +6,9 @@ require 'digest/sip_hash'
 require 'optionparser'
 
 hex_key = Digest::SipHash::DEFAULT_KEY.unpack1 'H*'
-Settings = Struct.new :c, :d, :key, keyword_init: true
-settings = Settings.new c: 1, d: 3, key: hex_key
+Config = Struct.new :c, :d, :key, keyword_init: true
+config = Config.new c: 1, d: 3, key: hex_key
+
 options = ARGV.options do |x|
   x.banner = "Usage: #{x.program_name} [OPTIONS] FILE"
   x.version = Digest::SipHash::VERSION
@@ -15,13 +16,23 @@ options = ARGV.options do |x|
   UnsignedInteger = /\A\d+\z/
   x.accept UnsignedInteger, UnsignedInteger, &:to_i
 
-  x.on '-c=ROUNDS', UnsignedInteger, "Number of c rounds. Default: #{settings.c}"
-  x.on '-d=ROUNDS', UnsignedInteger, "Number of d rounds. Default: #{settings.d}"
-  x.on '-k', '--key=KEY', String, "Sixteen-byte hex key. Default: \"#{hex_key}\""
+  HexOctets = /\A\h{32}\z/
+  x.accept HexOctets, HexOctets do |octets|
+    [octets].pack('H*').b
+  end
+
+  x.on '-c=ROUNDS', UnsignedInteger, "Number of c rounds. Default: #{config.c}"
+  x.on '-d=ROUNDS', UnsignedInteger, "Number of d rounds. Default: #{config.d}"
+  x.on '-k', '--key=KEY', HexOctets, "Sixteen-byte hex key. Default: \"#{hex_key}\""
 end.freeze
-options.permute! into: settings
+
+begin
+  options.permute! into: config
+rescue OptionParser::ParseError => e
+  abort e.message
+end
 
 path = ARGV.fetch 0, '-'
-hash = Digest::SipHash.new(settings.c, settings.d, key: [settings.key].pack('H*')).hexdigest ARGF.read
+hash = Digest::SipHash.new(config.c, config.d, key: config.key).hexdigest ARGF.read
 
 puts "#{hash}  #{path}"
