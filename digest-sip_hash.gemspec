@@ -8,15 +8,14 @@ Gem::Specification.new do |spec|
   spec.name          = 'digest-sip_hash'
   spec.version       = Digest::SipHash::VERSION
   spec.authors       = ['Shannon Skipper']
-  spec.email         = ['shannonskipper@gmail.com']
-  spec.description   = 'An implementation of SipHash 1-3 and 2-4 in pure Ruby.'
+  spec.email         = %w[shannonskipper@gmail.com]
+  spec.description   = 'An implementation of SipHash 1-3, 2-4, etc. in pure Ruby.'
   spec.summary       = 'Pure Ruby SipHash 1-3 and 2-4.'
   spec.homepage      = 'https://github.com/havenwood/digest-sip_hash'
-  spec.license       = 'MIT'
-  spec.files         = %w'Gemfile LICENSE Rakefile README.md' + Dir['{lib,spec}/**/*.rb', 'bin/*']
+  spec.licenses      = %w[MIT]
+  spec.files         = %w[Gemfile LICENSE Rakefile README.md] + Dir['{lib,spec}/**/*.rb', 'bin/*']
   spec.require_paths = %w[lib]
-  spec.bindir        = 'bin'
-  spec.executables  << 'siphash'
+  spec.executables   = %w[siphash]
 
   spec.add_development_dependency 'rake', '~> 12'
   spec.add_development_dependency 'minitest', '~> 5'
