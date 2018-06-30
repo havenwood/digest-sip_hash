@@ -78,10 +78,11 @@ module Digest
       end
 
       def last_block
-        remainder = @message.size % 8
-        offset = @message.size - remainder
+        size = @message.size
+        remainder = size % 8
+        offset = size - remainder
 
-        remainder.times.reverse_each.reduce @message.size << 56 & MASK do |last, n|
+        remainder.times.reduce size << 56 & MASK do |last, n|
           last | @message[n + offset].ord << 8 * n
         end
       end
