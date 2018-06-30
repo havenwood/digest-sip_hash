@@ -28,7 +28,7 @@ module Digest
     end
 
     def finish
-      sip = Sip.new @buffer, @key, @c_rounds, @d_rounds
+      sip = Sip.new @buffer, @c_rounds, @d_rounds, @key
       sip.transform
       sip.finalize
     end
@@ -40,11 +40,10 @@ module Digest
       V2 = 'lygenera'.unpack1 'Q>'
       V3 = 'tedbytes'.unpack1 'Q>'
 
-      def initialize buffer, key, c_rounds, d_rounds
-        @buffer = buffer
-        @size = @buffer.size
-        @c_rounds = c_rounds
-        @d_rounds = d_rounds
+      def initialize message, compression_rounds, finalization_rounds, key
+        @message = message
+        @compression_rounds = compression_rounds
+        @finalization_rounds = finalization_rounds
 
         k0 = key[0..7].unpack1 'Q<'
         k1 = key[8..15].unpack1 'Q<'
@@ -56,14 +55,13 @@ module Digest
       end
 
       def transform
-        return compress_block 0 if @size.zero?
-        (@size / 8).times { |n| compress_block block n }
+        (@message.size / 8).times { |n| compress_block block n }
         compress_block last_block
       end
 
       def finalize
         @v2 ^= 2 ** 8 - 1
-        @d_rounds.times { compress }
+        @finalization_rounds.times { compress }
         [@v0 ^ @v1 ^ @v2 ^ @v3].pack 'Q>'
       end
 
@@ -71,33 +69,33 @@ module Digest
 
       def compress_block n
         @v3 ^= n
-        @c_rounds.times { compress }
+        @compression_rounds.times { compress }
         @v0 ^= n
       end
 
       def block n
-        @buffer.slice(n * 8, 8).unpack1 'Q<'
+        @message.slice(n * 8, 8).unpack1 'Q<'
       end
 
       def last_block
-        remainder = @size % 8
-        offset = @size - remainder
+        remainder = @message.size % 8
+        offset = @message.size - remainder
 
-        remainder.times.reverse_each.reduce @size << 56 & MASK do |last, n|
-          last | @buffer[n + offset].ord << 8 * n
+        remainder.times.reverse_each.reduce @message.size << 56 & MASK do |last, n|
+          last | @message[n + offset].ord << 8 * n
         end
       end
 
       def compress
         @v0 = add @v0, @v1
-        @v1 = rotate @v1, 13, @v0
+        @v1 = rotate @v1, 13, xor: @v0
         @v0 = rotate @v0, 32
         @v2 = add @v2, @v3
-        @v3 = rotate @v3, 16, @v2
+        @v3 = rotate @v3, 16, xor: @v2
         @v0 = add @v0, @v3
-        @v3 = rotate @v3, 21, @v0
+        @v3 = rotate @v3, 21, xor: @v0
         @v2 = add @v2, @v1
-        @v1 = rotate @v1, 17, @v2
+        @v1 = rotate @v1, 17, xor: @v2
         @v2 = rotate @v2, 32
       end
 
@@ -105,7 +103,7 @@ module Digest
         a + b & MASK
       end
 
-      def rotate n, by, xor = 0
+      def rotate n, by, xor: 0
         n << by & MASK | n >> 64 - by ^ xor
       end
     end
