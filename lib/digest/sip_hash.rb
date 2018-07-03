@@ -89,14 +89,14 @@ module Digest
 
       def compress
         @v0 = add @v0, @v1
-        @v1 = rotate @v1, 13, xor: @v0
+        @v1 = rotate @v1, 13, @v0
         @v0 = rotate @v0, 32
         @v2 = add @v2, @v3
-        @v3 = rotate @v3, 16, xor: @v2
+        @v3 = rotate @v3, 16, @v2
         @v0 = add @v0, @v3
-        @v3 = rotate @v3, 21, xor: @v0
+        @v3 = rotate @v3, 21, @v0
         @v2 = add @v2, @v1
-        @v1 = rotate @v1, 17, xor: @v2
+        @v1 = rotate @v1, 17, @v2
         @v2 = rotate @v2, 32
       end
 
@@ -104,7 +104,7 @@ module Digest
         a + b & MASK
       end
 
-      def rotate n, by, xor: 0
+      def rotate n, by, xor = 0
         n << by & MASK | n >> 64 - by ^ xor
       end
     end
