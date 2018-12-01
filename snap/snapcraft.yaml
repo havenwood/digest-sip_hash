@@ -5,7 +5,6 @@ description: |
   A slow, Ruby implementation of SipHash with a `siphash` command line
   utility. "SipHash is a family of pseudorandom functions (a.k.a. keyed hash
   functions) optimized for speed on short messages."
-license: MIT
 grade: stable
 confinement: strict
 
