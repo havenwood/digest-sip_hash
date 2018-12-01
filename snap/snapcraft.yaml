@@ -1,8 +1,8 @@
 name: siphash
 version: '0.0.5'
-summary: An implementation of SipHash 1-3, 2-4, et al. in pure Ruby.
+summary: Calculate SipHash 1-3, 2-4, et al. with a given key.
 description: |
-  A slow, Ruby implementation of SipHash that includes a `siphash` command line
+  A slow, Ruby implementation of SipHash with a `siphash` command line
   utility. "SipHash is a family of pseudorandom functions (a.k.a. keyed hash
   functions) optimized for speed on short messages."
 grade: stable
