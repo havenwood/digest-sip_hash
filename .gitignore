@@ -9,6 +9,7 @@ Gemfile.lock
 *.so
 ext/digest_sip_hash_native/Makefile
 ext/digest_sip_hash_native/mkmf.log
+ext/digest_sip_hash_native/.sitearchdir.time
 ext/digest_sip_hash_native/target/
 ext/digest_sip_hash_native/core/target/
 ext/digest_sip_hash_native/ffi/target/

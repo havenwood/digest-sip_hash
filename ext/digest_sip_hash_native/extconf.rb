@@ -6,6 +6,13 @@ require 'rb_sys/mkmf'
 def rust? = system('cargo --version > /dev/null 2>&1')
 def jruby? = RUBY_ENGINE == 'jruby'
 
+if ENV['DIGEST_SIPHASH_DISABLE_NATIVE']
+  puts 'DIGEST_SIPHASH_DISABLE_NATIVE is set'
+  puts 'Skipping native extension, using pure Ruby implementation'
+  File.write('Makefile', "all:\n\t@echo 'Skipping'\ninstall:\n\t@echo 'Skipping'\n")
+  exit 0
+end
+
 if jruby?
   puts 'Skipping native extension on JRuby'
   puts 'digest-sip_hash will use pure Ruby implementation'
