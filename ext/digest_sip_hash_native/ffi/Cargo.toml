@@ -1,0 +1,22 @@
+[package]
+name = "digest-sip-hash-native"
+version = "0.1.0"
+edition = "2024"
+
+[lints]
+workspace = true
+
+[lib]
+name = "digest_sip_hash_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+digest-sip-hash-core = { path = "../core" }
+magnus = "0.8"
+rb-sys = { version = "0.9", features = ["stable-api-compiled-fallback"] }
+
+[build-dependencies]
+rb-sys-env = "0.2"
+
+[features]
+default = []
