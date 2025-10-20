@@ -1,2 +1,14 @@
+.bundle/
+*.bundle
+*.dll
+*.dSYM/
+*.dylib
+*.so
 digest-sip_hash-*.gem
+ext/digest_sip_hash_native/Cargo.lock
+ext/digest_sip_hash_native/Makefile
+ext/digest_sip_hash_native/mkmf.log
+ext/digest_sip_hash_native/*/target/
+ext/digest_sip_hash_native/*/Cargo.lock
 Gemfile.lock
+vendor/

@@ -4,49 +4,59 @@ require 'digest'
 require 'digest/sip_hash/version'
 
 module Digest
+  # SipHash: https://github.com/veorq/SipHash
   class SipHash < Digest::Class
     DEFAULT_KEY = 0.chr * 16
 
     attr_accessor :key
 
-    def initialize c_rounds = 1, d_rounds = 3, key: DEFAULT_KEY
-      @c_rounds = c_rounds
-      @d_rounds = d_rounds
+    def initialize(comp_rounds = 1, fin_rounds = 3, key: DEFAULT_KEY)
+      super()
+      @comp_rounds = comp_rounds
+      @fin_rounds = fin_rounds
       @key = key
-      @buffer = +''
+      @buffer = String.new(encoding: Encoding::BINARY, capacity: 64)
+      @native = true
     end
 
-    def << s
-      @buffer << s
+    def <<(input)
+      @buffer << input
       self
     end
     alias update <<
 
     def reset
       @buffer.clear
+      @native = true
       self
     end
 
     def finish
-      sip = Sip.new @buffer, @c_rounds, @d_rounds, @key
+      @native = false
+      sip = Sip.new(@buffer, @comp_rounds, @fin_rounds, @key)
       sip.transform
       sip.finalize
     end
 
+    def native?
+      @native == true
+    end
+
+    # SipHash algorithm
     class Sip
-      MASK = 2 ** 64 - 1
-      V0 = 'somepseu'.unpack1 'Q>'
-      V1 = 'dorandom'.unpack1 'Q>'
-      V2 = 'lygenera'.unpack1 'Q>'
-      V3 = 'tedbytes'.unpack1 'Q>'
+      MASK = 2**64 - 1
+      V0 = 'somepseu'.unpack1('Q>')
+      V1 = 'dorandom'.unpack1('Q>')
+      V2 = 'lygenera'.unpack1('Q>')
+      V3 = 'tedbytes'.unpack1('Q>')
 
-      def initialize message, compression_rounds, finalization_rounds, key
+      def initialize(message, comp_rounds, fin_rounds, key)
         @message = message
-        @compression_rounds = compression_rounds
-        @finalization_rounds = finalization_rounds
+        @comp_rounds = comp_rounds
+        @fin_rounds = fin_rounds
 
-        k0 = key[0..7].unpack1 'Q<'
-        k1 = key[8..15].unpack1 'Q<'
+        k0 = key[0..7].unpack1('Q<')
+        k1 = key[8..15].unpack1('Q<')
 
         @v0 = V0 ^ k0
         @v1 = V1 ^ k1
@@ -55,35 +65,33 @@ module Digest
       end
 
       def transform
-        (@message.size / 8).times { |n| compress_block block n }
+        (@message.size / 8).times { |index| compress_block block index }
         compress_block last_block
       end
 
       def finalize
-        @v2 ^= 2 ** 8 - 1
-        @finalization_rounds.times { compress }
-        [@v0 ^ @v1 ^ @v2 ^ @v3].pack 'Q>'
+        @v2 ^= 2**8 - 1
+        @fin_rounds.times { compress }
+        [@v0 ^ @v1 ^ @v2 ^ @v3].pack('Q>')
       end
 
       private
 
-      def compress_block n
-        @v3 ^= n
-        @compression_rounds.times { compress }
-        @v0 ^= n
+      def compress_block(value)
+        @v3 ^= value
+        @comp_rounds.times { compress }
+        @v0 ^= value
       end
 
-      def block n
-        @message.slice(n * 8, 8).unpack1 'Q<'
-      end
+      def block(index) = @message.slice(index * 8, 8).unpack1('Q<')
 
       def last_block
         size = @message.size
         remainder = size % 8
         offset = size - remainder
 
-        remainder.times.reduce size << 56 & MASK do |last, n|
-          last | @message[n + offset].ord << 8 * n
+        remainder.times.reduce size << 56 & MASK do |last, index|
+          last | @message.getbyte(index + offset) << 8 * index
         end
       end
 
@@ -100,25 +108,44 @@ module Digest
         @v2 = rotate @v2, 32
       end
 
-      def add a, b
-        a + b & MASK
-      end
+      def add(left, right) = left + right & MASK
 
-      def rotate n, by, xor = 0
-        n << by & MASK | n >> 64 - by ^ xor
+      def rotate(value, bits, xor = 0)
+        value << bits & MASK | value >> 64 - bits ^ xor
       end
     end
   end
 
+  # SipHash-1-3: Common faster variant
   class SipHash13 < SipHash
-    def initialize key: DEFAULT_KEY
-      super 1, 3, key: key
-    end
+    def initialize(key: DEFAULT_KEY) = super(1, 3, key:)
+
+    def self.hexdigest(str, key: DEFAULT_KEY) = new(key:).hexdigest(str)
+    def self.digest(str, key: DEFAULT_KEY) = new(key:).digest(str)
   end
 
+  # SipHash-2-4: Common more secure variant
   class SipHash24 < SipHash
-    def initialize key: DEFAULT_KEY
-      super 2, 4, key: key
+    def initialize(key: DEFAULT_KEY) = super(2, 4, key:)
+
+    def self.hexdigest(str, key: DEFAULT_KEY) = new(key:).hexdigest(str)
+    def self.digest(str, key: DEFAULT_KEY) = new(key:).digest(str)
+  end
+end
+
+# Load native extension after Ruby so Rust can override the `finish` method
+begin
+  require 'digest/sip_hash/digest_sip_hash_native'
+
+  module Digest
+    class SipHash
+      def self.native? = true
+    end
+  end
+rescue LoadError
+  module Digest
+    class SipHash
+      def self.native? = false
     end
   end
 end

@@ -1,0 +1,20 @@
+[package]
+name = "digest-sip-hash-core"
+version = "0.1.0"
+edition = "2024"
+
+[lints]
+workspace = true
+
+[features]
+default = []
+std = []
+
+[dependencies]
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "siphash_bench"
+harness = false
